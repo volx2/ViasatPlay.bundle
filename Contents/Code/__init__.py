@@ -13,8 +13,8 @@ LOGO_TV6	= "viasat_tv6.png"
 LOGO_TV8	= "viasat_tv8.png"
 LOGO_SPORT	= "viasat_sport.png"
 LOGO_ALL	= "viasat_alla.png"
-LOGO_MAIN	= "viasat_ikon.png"
-BACKGROUND	= "viasat_fanart.jpg"
+LOGO_MAIN	= "icon-default.png"
+BACKGROUND	= "art-default.jpg"
 
 #URLs to xml/player
 TV3_MAIN_URL 		= "http://viastream.viasat.tv/siteMapData/se/2se/0"
@@ -50,7 +50,7 @@ def BuildMenus(parameter, count):
 		for i in range(0,5):
 			thumb = Plugin.ExposedResourcePath(logo[i])
 			dir.AppendItem(DirectoryItem(name[i], name[i], thumb))
-		
+
 		return dir.ToXML()
 
 	#List series (channels for sport)
@@ -127,16 +127,16 @@ def BuildMenus(parameter, count):
 				thumb = Plugin.ExposedResourcePath(logo)
 				if(checkDeadLinks(id, parameter[0])):
 					dir.AppendItem(DirectoryItem(id, title, thumb))
-		
+
 			return dir.ToXML()
-				
+
 		for serie in series:
 			title = (serie.get("title"))
 			id = serie.get("id")
 			thumb = Plugin.ExposedResourcePath(logo)
 			if(checkDeadLinks(id, parameter[0])):
 				dir.AppendItem(DirectoryItem(id, title, thumb))
-		
+
 		return dir.ToXML()
 
 	elif(count == 2):
@@ -146,7 +146,7 @@ def BuildMenus(parameter, count):
 		else:
 			showTitle = XML.ElementFromURL(VIASAT_SEASONS_URL + parameter[1]).get("title")
 			dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=showTitle)
-		
+
 		xml = XML.ElementFromURL(VIASAT_SEASONS_URL + parameter[1])
 		if not xml.xpath("siteMapNode"):
 			xml = XML.ElementFromURL(VIASAT_SEASONS_URL_OLD + parameter[1])
@@ -174,9 +174,9 @@ def BuildMenus(parameter, count):
 				if (len(thumb) == 0):
 					thumb=Plugin.ExposedResourcePath(logo)
 				dir.AppendItem(DirectoryItem(id, title, thumb))
-		
+
 		return dir.ToXML()
-		
+
 	#List all the episodes in the season/event
 	elif(count == 3):
 		if(parameter[0] == "Viasat Sport"):
@@ -223,10 +223,10 @@ def BuildMenus(parameter, count):
 				link = PLEX_PLAYER_LIVE_URL + splitLink[4] + "/" + splitLink[5] + "&live=true"
 			Log.Add("Link: %s" % (link))
 			dir.AppendItem(WebVideoItem(link, title, episodeInfo, None, thumb))
-			
+
 		return dir.ToXML()
 
-# Go deaper in the tree and check if any links is live	
+# Go deaper in the tree and check if any links is live
 def checkDeadLinks(id, parameter):
 	xml = XML.ElementFromURL(VIASAT_SEASONS_URL + id)
 	if not xml.xpath("siteMapNode"):
@@ -239,7 +239,7 @@ def checkDeadLinks(id, parameter):
 			Log.Add("Articles: %s" % (articles))
 			if(articles > 0):
 				return True
-	
+
 	return False
 
 # Fetch image for series on step higher in the tree
