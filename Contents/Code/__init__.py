@@ -13,6 +13,9 @@ LOGO_TV6	= "viasat_tv6.png"
 LOGO_TV8	= "viasat_tv8.png"
 LOGO_SPORT	= "viasat_sport.png"
 LOGO_ALL	= "viasat_alla.png"
+LOGO_TV3_NORWAY	= "tv3_norway.png"
+LOGO_VIASAT4_NORWAY	= "viasat4_norway.png"
+LOGO_ALL_NORWAY	= "viasat_alle.png"
 LOGO_MAIN	= "icon-default.png"
 BACKGROUND	= "art-default.jpg"
 
@@ -20,6 +23,8 @@ BACKGROUND	= "art-default.jpg"
 TV3_MAIN_URL 		= "http://viastream.viasat.tv/siteMapData/se/2se/0"
 TV6_MAIN_URL 		= "http://viastream.viasat.tv/siteMapData/se/3se/0"
 TV8_MAIN_URL		= "http://viastream.viasat.tv/siteMapData/se/4se/0"
+TV3_NORWAY_MAIN_URL = "http://viastream.viasat.tv/siteMapData/no/2no/0"
+VIASAT4_NORWAY_MAIN_URL = "http://viastream.viasat.tv/siteMapData/no/23no/0"
 SPORT_BACKUP_URL	= "http://viastream.viasat.tv/siteMapData/se/1se/0"
 SPORT_MAIN_URL		= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=siteMapData&channel=1se&country=se&category="
 SPORT_BACKUP_URL	= "http://viastream.viasat.tv/siteMapData/se/1se/0"
@@ -30,6 +35,7 @@ VIASAT_EPISODES_URL	= "http://viastream.viasat.tv/Products/Category/"
 VIASAT_EPISODE_INFO_URL	= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=Products&clipid="
 VIASAT_EPISODE_INFO_URL2="http://viastream.viasat.tv/Products/"
 PLEX_PLAYER_URL		= "http://www.plexapp.com/player/player.php?url=rtmp://mtgfs.fplive.net/mtg/flash/&clip=/sweden/"
+PLEX_PLAYER_URL_NORWAY = "http://www.plexapp.com/player/player.php?url=rtmp://mtgfs.fplive.net/mtg/flash/&clip=/norway/"
 PLEX_PLAYER_LIVE_URL	= "http://www.plexapp.com/player/player.php?url=rtmp://mtglivefs.fplive.net/mtglive-live/&clip=/"
 
 def Start():
@@ -42,12 +48,12 @@ def BuildMenus(parameter, count):
 	#List channels
 	if(count == 0):
 		dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE)
-		name = ["Alla kanaler", "TV3", "TV6", "TV8", "Viasat Sport"]
+		name = ["Alla svenska kanaler", "TV3", "TV6", "TV8", "Viasat Sport", "TV3 - Norway", "Viasat4 - Norway"]
 		#name = ["TV3", "TV6", "TV8", "Viasat Sport"]
-		logo = [LOGO_ALL, LOGO_TV3, LOGO_TV6, LOGO_TV8, LOGO_SPORT]
+		logo = [LOGO_ALL, LOGO_TV3, LOGO_TV6, LOGO_TV8, LOGO_SPORT, LOGO_TV3_NORWAY, LOGO_VIASAT4_NORWAY]
 		#logo = [LOGO_TV3, LOGO_TV6, LOGO_TV8, LOGO_SPORT]
 
-		for i in range(0,5):
+		for i in range(0,len(name)):
 			thumb = Plugin.ExposedResourcePath(logo[i])
 			dir.AppendItem(DirectoryItem(name[i], name[i], thumb))
 
@@ -88,7 +94,24 @@ def BuildMenus(parameter, count):
 			except:
 				Log.Add("Exception: Sport Unavailable")
 			logo = LOGO_SPORT
-		if(parameter[0] == "Alla kanaler"):
+		
+		# Norwegian channels
+		if(parameter[0] == "TV3 - Norway"):
+			tempXML	= XML.ElementFromURL(TV3_NORWAY_MAIN_URL)
+			try:
+				series = tempXML.xpath("siteMapNode")
+			except:
+				Log.Add("Exception: TV3 - Norway Unavailable")
+			logo = LOGO_TV3_NORWAY
+		if(parameter[0] == "Viasat4 - Norway"):
+			tempXML	= XML.ElementFromURL(VIASAT4_NORWAY_MAIN_URL)
+			try:
+				series = tempXML.xpath("siteMapNode")
+			except:
+				Log.Add("Exception: Viasat4 - Norway Unavailable")
+			logo = LOGO_VIASAT4_NORWAY
+			
+		if(parameter[0] == "Alla svenska kanaler"):
 			try:
 				tempXML = XML.ElementFromURL(SPORT_BACKUP_URL)
 			except:
@@ -161,9 +184,13 @@ def BuildMenus(parameter, count):
 			logo = LOGO_TV8
 		if(parameter[0] == "Viasat Sport"):
 			logo = LOGO_SPORT
-		if(parameter[0] == "Alla kanaler"):
+		if(parameter[0] == "Alla svenska kanaler"):
 			logo = LOGO_ALL
-
+		if(parameter[0] == "TV3 - Norway"):
+			logo = LOGO_TV3_NORWAY
+		if(parameter[0] == "Viasat4 - Norway"):
+			logo = LOGO_VIASAT4_NORWAY
+		
 		for season in seasons:
 			title = season.get("title")
 			id = season.get("id")
@@ -192,6 +219,8 @@ def BuildMenus(parameter, count):
 		episodes = xml1.xpath("Product")
 
 		for episode in episodes:
+			player_url = PLEX_PLAYER_URL
+			
 			if(parameter[0] == "TV3"):
 				logo = LOGO_TV3
 			if(parameter[0] == "TV6"):
@@ -200,8 +229,15 @@ def BuildMenus(parameter, count):
 				logo = LOGO_TV8
 			if(parameter[0] == "Viasat Sport"):
 				logo = LOGO_SPORT
-			if(parameter[0] == "Alla kanaler"):
+			if(parameter[0] == "Alla svenska kanaler"):
 				logo = LOGO_ALL
+			if(parameter[0] == "TV3 - Norway"):
+				logo = LOGO_TV3_NORWAY
+				player_url = PLEX_PLAYER_URL_NORWAY
+			if(parameter[0] == "Viasat4 - Norway"):
+				logo = LOGO_VIASAT4_NORWAY
+				player_url = PLEX_PLAYER_URL_NORWAY
+			
 			title = episode.xpath("./Title/text()")[0]
 			id = episode.xpath("./ProductId/text()")[0]
 			xml= XML.ElementFromURL(VIASAT_EPISODE_INFO_URL + id)
@@ -212,13 +248,19 @@ def BuildMenus(parameter, count):
 			if(".jpg" not in thumb):
 				thumb=Plugin.ExposedResourcePath(logo)
 			clipLink = xml.xpath("Product/Videos/Video/Url/text()")[0]
+			
+			# Find alternate clip source
+			if clipLink.startswith('http://viastream.viasat.tv/extra/extra.php'):
+				xmlClip = XML.ElementFromURL(clipLink)
+				clipLink = xmlClip.xpath("Url/text()")[0]
+			
 			splitLink = clipLink.split('/')
 			if(len(splitLink)>10):
-				link = PLEX_PLAYER_URL + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "/" + splitLink[10] + "&live=true"
+				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "/" + splitLink[10] + "&live=true"
 			elif(len(splitLink)>9):
-				link = PLEX_PLAYER_URL + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "&live=true"
+				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "&live=true"
 			elif(len(splitLink)>8):
-				link = PLEX_PLAYER_URL + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "&live=true"
+				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "&live=true"
 			elif(len(splitLink)>5):
 				link = PLEX_PLAYER_LIVE_URL + splitLink[4] + "/" + splitLink[5] + "&live=true"
 			Log.Add("Link: %s" % (link))
