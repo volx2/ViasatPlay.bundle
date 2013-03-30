@@ -1,0 +1,195 @@
+import re
+
+VIDEO_STREAM_URL  = 'http://viastream.viasat.tv/MobileStream/%s'
+VIDEO_DETAILS_URL = '/mobileapi/detailed?videoid=%s'
+
+####################################################################################################
+def MetadataObjectForURL(url): 
+  # Determine id of episode
+  try:
+    m  = re.search('(?<=play/)[0-9]+', url)
+    id = m.group(0)
+  except:
+    raise Ex.MediaNotAvailable
+
+  baseurl = url[ : url.rfind('/') + 1].replace("/play/", "")
+
+  try: 
+    videos = JSON.ObjectFromURL(baseurl + VIDEO_DETAILS_URL % id)
+
+    for item in videos['videos']['video_program']:
+      if id == item['id']:
+    
+        try:
+          publishdate = str(video['airdate'])
+          year        = int(publishdate[0:4])
+          month       = int(publishdate[5:7])
+          day         = int(publishdate[7:9])
+          airdate     = datetime.date(year, month, day)
+        except:
+          airdate = None
+    
+        return EpisodeObject(
+                 show = videos['format']['title'],
+                 title = item['title'],
+                 summary = item['summary'] + item['description'],
+                 duration = int(item['length']) * 1000,
+                 thumb = "http://play.pdl.viaplay.com/imagecache/497x280/" + item['image'].replace('\\', ''),
+                 originally_available_at = airdate
+               )
+  except:
+    pass
+
+  try:
+    episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/playProduct/" + id)
+  except:
+    try:
+      episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/Product/" + id)
+    except:
+      raise Ex.MediaNotAvailable  
+
+  try:
+    broadcastDate = episode.xpath("./BroadcastDate/text()")[0]
+    broadcastTime = episode.xpath("./BroadcastTime/text()")[0]
+    airdate       = datetime.datetime.strptime(broadcastDate + broadcastTime,"%Y%m%d%H%M")
+  except:
+    airdate = None
+
+  return EpisodeObject(
+            show = episodeXML.xpath("//Products/@title")[0],
+            title = episodeXML.xpath("//Products//Product//Title/text()")[0],
+            summary = episodeXML.xpath("//Products//Product//LongDescription/text()")[0],
+            thumb = episodeXML.xpath("//Products//Product//Images//ImageMedia//Url/text()")[1],
+            originally_available_at = airdate
+        )  
+
+####################################################################################################
+def MediaObjectsForURL(url):
+  mediaObjs = []
+
+  # Determine id of episode
+  try:
+    m  = re.search('(?<=play/)[0-9]+', url)
+    id = m.group(0)
+  except:
+    raise Ex.MediaNotAvailable
+  
+  try: 
+    pageElement = HTML.ElementFromURL(VIDEO_STREAM_URL % id)
+  except:
+    raise Ex.MediaNotAvailable
+    
+  mediaUrl = pageElement.xpath("text()")[0].replace('"', '').replace('\\', '')
+
+  if mediaUrl.startswith("http"):
+    if mediaUrl.endswith(".m3u8"):
+      mo = MediaObject(container               = 'mpegts',
+                       video_codec             = VideoCodec.H264,
+                       audio_codec             = AudioCodec.AAC,                 
+                       audio_channels          = 2,
+                       optimized_for_streaming = True,
+                       parts                   = [PartObject(key = HTTPLiveStreamURL( Callback(PlayVideo, url = mediaUrl) ))])
+                             
+      mediaObjs.append(mo)
+    
+    elif mediaUrl.endswith(".mp4"):
+      mo = MediaObject(audio_channels   = 2,
+                       container        = Container.MP4,
+                       parts            = [PartObject(key = Callback(PlayFile, 
+                                                                     url = mediaUrl))])
+                         
+      mediaObjs.append(mo)
+      
+  
+  if mediaObjs == []:
+    try:
+      episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/playProduct/" + id)
+    except:
+      episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/Product/" + id) 
+
+    url = episodeXML.xpath("//Products//Product/Videos//Video//Url/text()")[0]
+  
+    if 'rtmp' in url:
+      rtmp_url = url
+    else:
+      xmlElement = XML.ElementFromURL(url)
+      rtmp_url   = xmlElement.xpath("//Url/text()") 
+    
+    mo = MediaObject(video_codec             = VideoCodec.H264,
+                     audio_codec             = AudioCodec.AAC, 
+                     audio_channels          = 2,
+                     optimized_for_streaming = True,
+                     parts                   = [PartObject(key = RTMPVideoURL(rtmp_url, 
+                                                                              swf_url = "http://flvplayer.viastream.viasat.tv/play/swf/player130213.swf"))])
+    mediaObjs.append(mo) 
+  
+  return mediaObjs
+
+####################################################################################################
+def PlayFile(url): 
+  return Redirect(url)
+
+###########################################################
+def PlayVideo(url):
+  if Client.Platform == ClientPlatform.iOS:
+    return Redirect(url)
+  else:
+    HLSStreams = getHLSStreams(url)
+          
+    maxBitrateUrl = ""     
+    sortedStreams = sorted(HLSStreams, key=lambda stream: stream["bitrate"], reverse=True)
+    for s in sortedStreams:
+      maxBitrateUrl = s["url"]
+      break
+    
+    newPlaylist = ""  
+    orgPlayList = HTTP.Request(maxBitrateUrl).content
+    path        = url[ : url.rfind('/') + 1]
+    for line in orgPlayList.splitlines():
+      if 'segment' in line:
+        newPlaylist = newPlaylist + path + line + '\n'
+      else:
+        newPlaylist = newPlaylist + line + '\n'   
+    
+    return newPlaylist
+
+###########################################################
+def getHLSStreams(hlsUrl):
+  streams = []
+  Found   = True  
+                  
+  try: 
+    pageElement = HTML.ElementFromURL(hlsUrl)
+  except:
+    Found = False
+          
+  if Found:
+    streamSpec      = pageElement.xpath("text()")[0]
+    streamSpecLines = streamSpec.splitlines()
+    
+    path = hlsUrl[ : hlsUrl.rfind('/') + 1]
+          
+    # Parse the m3u8 file to get:
+    # - URL
+    # - Resolution
+    # - Bitrate
+    for line in streamSpecLines:
+      if "BANDWIDTH" in line:
+        bwm = re.search('(?<=BANDWIDTH=)[0-9]+', line)
+        
+        stream               = {}
+        stream["bitrate"]    = int(bwm.group(0))        
+        
+        if "RESOLUTION" in line:
+          rnm                  = re.search('(?<=RESOLUTION=)[0-9]+x[0-9]+', line)
+          stream["resolution"] = int(rnm.group(0).split("x")[1])
+        else:
+          stream["resolution"] = 0
+            
+      elif ".m3u8" in line:
+          stream["url"] = path + line
+          Log("STREAM: " + stream["url"])
+          streams.append(stream)         
+
+  return streams 
+  
