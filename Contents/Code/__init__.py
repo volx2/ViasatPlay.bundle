@@ -14,10 +14,16 @@ BASE_URL_TV6 = 'http://www.tv6play.se'
 XML_URL_TV6  = 'http://viastream.viasat.tv/siteMapData/se/3se/'
 
 BASE_URL_TV8 = 'http://www.tv8play.se'
-XML_URL_TV8  = 'http://viastream.viasat.tv/siteMapData/se/4se/'  
+XML_URL_TV8  = 'http://viastream.viasat.tv/siteMapData/se/4se/'
 
 BASE_URL_TV3_NORWAY = 'http://www.tv3play.no'
-XML_URL_TV3_NORWAY  = 'http://viastream.viasat.tv/siteMapData/no/2no/0'
+XML_URL_TV3_NORWAY  = 'http://viastream.viasat.tv/siteMapData/no/2no/'
+
+BASE_URL_VIASAT4_PLAY_NORWAY = 'http://www.viasat4play.no'
+XML_URL_VIASAT4_PLAY_NORWAY  = 'http://viastream.viasat.tv/siteMapData/no/23no/'
+
+BASE_URL_TV3_DENMARK = 'http://www.tv3play.dk'
+XML_URL_TV3_DENMARK  = 'http://viastream.viasat.tv/siteMapData/dk/2dk/'
 
 CACHE_INTERVAL = CACHE_1HOUR
 
@@ -26,10 +32,12 @@ PLUGIN_ARTWORK      = 'art-default.jpg'
 PLUGIN_ICON_DEFAULT = 'icon-default.png'
 PLUGIN_ICON_MORE    = 'icon-more.png'
 
-TV3_ICON_DEFAULT        = R('viasat_tv3.png')
-TV6_ICON_DEFAULT        = R('viasat_tv6.png')
-TV8_ICON_DEFAULT        = R('viasat_tv8.png')
-TV3_NORWAY_ICON_DEFAULT = R('tv3_norway.png')
+TV3_ICON_DEFAULT                 = R('viasat_tv3.png')
+TV6_ICON_DEFAULT                 = R('viasat_tv6.png')
+TV8_ICON_DEFAULT                 = R('viasat_tv8.png')
+TV3_NORWAY_ICON_DEFAULT          = R('tv3_norway.png')
+TV3_DENMARK_ICON_DEFAULT         = R('tv3_norway.png')
+VIASAT4_PLAY_NORWAY_ICON_DEFAULT = R('viasat4_norway.png')
 
 ART   = "art-default.jpg"
 THUMB = 'icon-default.png'
@@ -55,15 +63,61 @@ def Start():
 @handler('/video/viasatplay', PLUGIN_TITLE, thumb=THUMB, art=ART)
 def MainMenu():
   menu = ObjectContainer(title1=PLUGIN_TITLE)
-  menu.add(DirectoryObject(key=Callback(AllPrograms, title="TV3 Play", channel="3", url=BASE_URL_TV3, xmlurl=XML_URL_TV3, thumb=TV3_ICON_DEFAULT), title="TV3 Play", thumb=TV3_ICON_DEFAULT))
-  menu.add(DirectoryObject(key=Callback(AllPrograms, title="TV6 Play", channel="6", url=BASE_URL_TV6, xmlurl=XML_URL_TV6, thumb=TV6_ICON_DEFAULT), title="TV6 Play", thumb=TV6_ICON_DEFAULT))
-  menu.add(DirectoryObject(key=Callback(AllPrograms, title="TV8 Play", channel="8", url=BASE_URL_TV8, xmlurl=XML_URL_TV8, thumb=TV8_ICON_DEFAULT), title="TV8 Play", thumb=TV8_ICON_DEFAULT))
-  menu.add(DirectoryObject(key=Callback(AllPrograms, title="TV3 Play Norge", channel="3", url=BASE_URL_TV3_NORWAY, xmlurl=XML_URL_TV3_NORWAY, thumb=TV3_NORWAY_ICON_DEFAULT), title="TV3 Play Norge", thumb=TV3_NORWAY_ICON_DEFAULT))
+  menu.add( DirectoryObject(key = Callback(AllPrograms, title = "TV3 Play", 
+                                                        url = BASE_URL_TV3, 
+                                                        xmlurl = XML_URL_TV3, 
+                                                        thumb = TV3_ICON_DEFAULT), 
+                              title = "TV3 Play", 
+                              thumb = TV3_ICON_DEFAULT, 
+                              summary = u'TV3 är kanalen med starka känslor och starka karaktärer. Det är en suverän mix av serier, livsstilsprogram, storfilmer, reportage och intressanta program.')
+  )
+  menu.add(DirectoryObject(key = Callback(AllPrograms, title = "TV6 Play", 
+                                                       url = BASE_URL_TV6, 
+                                                       xmlurl = XML_URL_TV6, 
+                                                       thumb = TV6_ICON_DEFAULT),
+                           title = "TV6 Play", 
+                           thumb = TV6_ICON_DEFAULT,
+                           summary = u'TV6 En underhållningskanal för den breda publiken. Actionfilmer och den vassaste humorn.')
+  )
+  menu.add(DirectoryObject(key = Callback(AllPrograms, title = "TV8 Play", 
+                                                       url = BASE_URL_TV8,
+                                                       xmlurl = XML_URL_TV8,
+                                                       thumb = TV8_ICON_DEFAULT),
+                           title = "TV8 Play", 
+                           thumb = TV8_ICON_DEFAULT,
+                           summary = u'TV8 är en svensk livsstils- och underhållningskanal med ett brett utbud. Du som gillar bilar, hus och vill veta allt om slottsliv, kommer inte vilja missa våra svenska produktioner i höst.')
+  )
+  menu.add(DirectoryObject(key = Callback(AllPrograms, title = "TV3 Play Norge", 
+                                                       url = BASE_URL_TV3_NORWAY, 
+                                                       xmlurl = XML_URL_TV3_NORWAY, 
+                                                       thumb = TV3_NORWAY_ICON_DEFAULT), 
+                           title = "TV3 Play Norge", 
+                           thumb = TV3_NORWAY_ICON_DEFAULT,
+                           summary = u'TV3 er en underholdningskanal for alle. Våre verdier er leken, nyskapende, oppløftende og engasjerende. Kanalens programtilbud består av innkjøpte serier, filmer og norske egenproduserte programmer i ulike kategorier.')
+  )
+
+  menu.add(DirectoryObject(key = Callback(AllPrograms, title="Viasat 4 Play Norge", 
+                                                       url = BASE_URL_VIASAT4_PLAY_NORWAY,
+                                                       xmlurl = XML_URL_VIASAT4_PLAY_NORWAY, 
+                                                       thumb = VIASAT4_PLAY_NORWAY_ICON_DEFAULT), 
+                           title = "Viasat 4 Play Norge", 
+                           thumb = VIASAT4_PLAY_NORWAY_ICON_DEFAULT,
+                           summary = u'Viasat 4 er en norsk underholdnings- og sportskanal fra Modern Times Group (MTG). Kanalen startet sendinger 8. september 2007 i forbindelse med utbyggingen av det digitale bakkenettet.')
+  )
+
+  menu.add(DirectoryObject(key = Callback(AllPrograms, title = "TV3 Play Danmark", 
+                                                       url = BASE_URL_TV3_DENMARK, 
+                                                       xmlurl = XML_URL_TV3_DENMARK, 
+                                                       thumb = TV3_DENMARK_ICON_DEFAULT), 
+                           title = "TV3 Play Danmark", 
+                           thumb = TV3_DENMARK_ICON_DEFAULT,
+                           summary = u'På TV3 Play kan du se alle TV3’s egne programmer og nogen af vores udenlandske serier. Vi har også ekstramateriale til flere af vores programmer. Mer information om vores programmer findes på TV3.dk')
+  )  
   return menu
 
 ####################################################################################################
 @route('/video/viasatplay/AllPrograms')
-def AllPrograms(title, channel, url, xmlurl, thumb):
+def AllPrograms(title, url, xmlurl, thumb):
   dir = ObjectContainer(title2=title)
   
   alreadyAdded = []
@@ -80,30 +134,32 @@ def AllPrograms(title, channel, url, xmlurl, thumb):
       programs.append(p)
         
       alreadyAdded.append(program['title'])
-                                             
-  xmlElement  = XML.ElementFromURL(xmlurl + "0")
-  xmlPrograms = xmlElement.xpath("//siteMapData//siteMapNode")
-  pageElement = HTML.ElementFromURL(url + "/program")
-  for item in pageElement.xpath("//div[contains(@id, 'content')]//div[contains(@class, 'column')]//ul//a"):
-    name = item.xpath("./text()")[0]
-    for xmlProgram in xmlPrograms:
-      if name == xmlProgram.xpath("./@title")[0] and name not in alreadyAdded:
-        program         = {}
-        program["name"] = name 
-        program["id"]   = xmlProgram.xpath("./@id")[0]
-        program["desc"] = None
-        program["img"]  = thumb
-        programs.append(program)
-        
+  
+  try:                                           
+    xmlElement  = XML.ElementFromURL(xmlurl + "0")
+    xmlPrograms = xmlElement.xpath("//siteMapData//siteMapNode")
+    pageElement = HTML.ElementFromURL(url + "/program")
+    for item in pageElement.xpath("//div[contains(@id, 'content')]//div[contains(@class, 'column')]//ul//a"):
+      name = item.xpath("./text()")[0]
+      for xmlProgram in xmlPrograms:
+        if name == xmlProgram.xpath("./@title")[0] and name not in alreadyAdded:
+          program         = {}
+          program["name"] = name 
+          program["id"]   = xmlProgram.xpath("./@id")[0]
+          program["desc"] = None
+          program["img"]  = thumb
+          programs.append(program)
+  except:
+    pass      
            
   sortedPrograms = sorted(programs, key=lambda program: program["name"])
            
   for program in sortedPrograms:
     dir.add(DirectoryObject(key = Callback(Seasons,
                                            title = program['name'],
-                                           channel = channel,
                                            summary = program['desc'],
                                            thumb = program['img'],
+                                           url = url,
                                            xmlurl = xmlurl,
                                            id = program['id']),
                             title = program['name'],
@@ -115,7 +171,7 @@ def AllPrograms(title, channel, url, xmlurl, thumb):
 
 ####################################################################################################
 @route('/video/viasatplay/Seasons')
-def Seasons(title, channel, summary, thumb, xmlurl, id):
+def Seasons(title, summary, thumb, url, xmlurl, id):
   dir = ObjectContainer(title2=title)
   
   xmlElement = XML.ElementFromURL(xmlurl + id)
@@ -126,7 +182,7 @@ def Seasons(title, channel, summary, thumb, xmlurl, id):
     
     dir.add(DirectoryObject(key = Callback(Episodes, 
                                            title = season["title"],
-                                           channel = channel, 
+                                           url = url, 
                                            xmlurl = xmlurl, 
                                            id = season["id"]), 
                             title=season["title"], 
@@ -137,7 +193,7 @@ def Seasons(title, channel, summary, thumb, xmlurl, id):
  
 ####################################################################################################
 @route('/video/viasatplay/Episodes')
-def Episodes(title, channel, xmlurl, id):
+def Episodes(title, url, xmlurl, id):
   dir = ObjectContainer(title2=title)
 
   episodeIDsXML = XML.ElementFromURL("http://viastream.viasat.tv/Products/Category/" + id)
@@ -167,7 +223,7 @@ def Episodes(title, channel, xmlurl, id):
         video["airtime"] = None
           
       dir.add(EpisodeObject(
-        url = "http://www.tv" + channel + "play.se/play/" + id,
+        url = url + '/play/' + id,
         title = video["title"],
         summary = video["desc"],
         show = None,

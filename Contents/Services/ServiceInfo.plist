@@ -16,7 +16,8 @@
 			</array>
 			<key>URLPatterns</key>
 			<array>
-				<string>http://www.tv[3,6,8]play.se/play/[0-9]+</string>
+				<string>http://www.tv[3,6,8]play.(se|no|dk)/play/[0-9]+</string>
+				<string>http://www.viasat4play.no/play/[0-9]+</string>
 			</array>
 		</dict>
 	</dict>

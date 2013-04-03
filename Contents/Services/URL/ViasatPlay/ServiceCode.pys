@@ -105,7 +105,10 @@ def MediaObjectsForURL(url):
     try:
       episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/playProduct/" + id)
     except:
-      episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/Product/" + id) 
+      try:
+        episodeXML = XML.ElementFromURL("http://viastream.viasat.tv/Product/" + id)
+      except:
+        raise Ex.MediaGeoblocked
 
     url = episodeXML.xpath("//Products//Product/Videos//Video//Url/text()")[0]
   
