@@ -30,9 +30,9 @@ def MetadataObjectForURL(url):
           airdate = None
     
         return EpisodeObject(
-                 show = videos['format']['title'],
-                 title = item['title'],
-                 summary = item['summary'] + item['description'],
+                 show = unicode(videos['format']['title']),
+                 title = unicode(item['title']),
+                 summary = unicode(item['summary'] + item['description']),
                  duration = int(item['length']) * 1000,
                  thumb = "http://play.pdl.viaplay.com/imagecache/497x280/" + item['image'].replace('\\', ''),
                  originally_available_at = airdate
@@ -56,9 +56,9 @@ def MetadataObjectForURL(url):
     airdate = None
 
   return EpisodeObject(
-            show = episodeXML.xpath("//Products/@title")[0],
-            title = episodeXML.xpath("//Products//Product//Title/text()")[0],
-            summary = episodeXML.xpath("//Products//Product//LongDescription/text()")[0],
+            show = unicode(episodeXML.xpath("//Products/@title")[0]),
+            title = unicode(episodeXML.xpath("//Products//Product//Title/text()")[0]),
+            summary = unicode(episodeXML.xpath("//Products//Product//LongDescription/text()")[0]),
             thumb = episodeXML.xpath("//Products//Product//Images//ImageMedia//Url/text()")[1],
             originally_available_at = airdate
         )  
@@ -123,7 +123,7 @@ def MediaObjectsForURL(url):
                      audio_channels          = 2,
                      optimized_for_streaming = True,
                      parts                   = [PartObject(key = RTMPVideoURL(rtmp_url, 
-                                                                              swf_url = "http://flvplayer.viastream.viasat.tv/play/swf/player130213.swf"))])
+                                                                              swf_url = "http://flvplayer.viastream.viasat.tv/play/swf/player130426.swf"))])
     mediaObjs.append(mo) 
   
   return mediaObjs
@@ -191,7 +191,6 @@ def getHLSStreams(hlsUrl):
             
       elif ".m3u8" in line:
           stream["url"] = path + line
-          Log("STREAM: " + stream["url"])
           streams.append(stream)         
 
   return streams 
