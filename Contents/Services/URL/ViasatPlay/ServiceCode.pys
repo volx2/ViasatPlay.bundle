@@ -18,15 +18,6 @@ def MetadataObjectForURL(url):
 
         for video in videos['videos']['video_program']:
             if id == video['id']:
-                try: 
-                    publishdate = str(video['airdate'])
-                    year        = int(publishdate[0:4])
-                    month       = int(publishdate[5:7])
-                    day         = int(publishdate[7:9])
-                    airdate     = datetime.date(year, month, day)
-                except:
-                    airdate = None
-    
                 return EpisodeObject(
                     title = unicode(video['title']),
                     summary = unicode(video['summary'] + video['description']),
@@ -74,7 +65,7 @@ def PlayVideo(id):
     if mediaUrl.startswith("http"):
         if mediaUrl.endswith(".m3u8"):
             streams = GetHLSStreams(mediaUrl)
-            Log(streams[0]['url'])
+
             return IndirectResponse(
                         VideoClipObject,
                         key = HTTPLiveStreamURL(streams[0]['url'])
