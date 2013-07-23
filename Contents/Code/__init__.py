@@ -5,52 +5,50 @@ ART   = "art-default.jpg"
 THUMB = 'icon-default.png'
 
 CHANNELS = [ 
-	{
-		'title': 	'TV3 Play',
-		'url':		'http://www.tv3play.se',
-		'thumb':	R('viasat_tv3.png'),
-		'desc':		unicode('TV3 är kanalen med starka känslor och starka karaktärer. Det är en suverän mix av serier, livsstilsprogram, storfilmer, reportage och intressanta program.')
-	},
-	{
-		'title': 	'TV6 Play',
-		'url':		'http://www.tv6play.se',
-		'thumb':	R('viasat_tv6.png'),
-		'desc':		unicode('TV6 En underhållningskanal för den breda publiken. Actionfilmer och den vassaste humorn.')
-	},
-	{
-		'title': 	'TV8 Play',
-		'url':		'http://www.tv8play.se',
-		'thumb':	R('viasat_tv8.png'),
-		'desc':		unicode('TV8 är en svensk livsstils- och underhållningskanal med ett brett utbud. Du som gillar bilar, hus och vill veta allt om slottsliv, kommer inte vilja missa våra svenska produktioner i höst.')
-	},
-	{
-		'title': 	'TV3 Play Norge',
-		'url':		'http://www.tv3play.no',
-		'thumb':	R('tv3_norway.png'),
-		'desc':		unicode('TV3 er en underholdningskanal for alle. Våre verdier er leken, nyskapende, oppløftende og engasjerende. Kanalens programtilbud består av innkjøpte serier, filmer og norske egenproduserte programmer i ulike kategorier.')
-	},
-	{
-		'title': 	'Viasat 4 Play Norge',
-		'url':		'http://www.viasat4play.no',
-		'thumb':	R('viasat4_norway.png'),
-		'desc':		unicode('Viasat 4 er en norsk underholdnings- og sportskanal fra Modern Times Group (MTG). Kanalen startet sendinger 8. september 2007 i forbindelse med utbyggingen av det digitale bakkenettet.')
-	},	
-	{
-		'title': 	'TV3 Play Danmark',
-		'url':		'http://www.tv3play.dk',
-		'thumb':	R('tv3_norway.png'),
-		'desc':		unicode('På TV3 Play kan du se alle TV3’s egne programmer og nogen af vores udenlandske serier. Vi har også ekstramateriale til flere af vores programmer. Mer information om vores programmer findes på TV3.dk')
-	},
+    {
+        'title':    'TV3 Play',
+        'url':      'http://www.tv3play.se',
+        'thumb':    R('viasat_tv3.png'),
+        'desc':     unicode('TV3 är kanalen med starka känslor och starka karaktärer. Det är en suverän mix av serier, livsstilsprogram, storfilmer, reportage och intressanta program.')
+    },
+    {
+        'title':    'TV6 Play',
+        'url':      'http://www.tv6play.se',
+        'thumb':    R('viasat_tv6.png'),
+        'desc':     unicode('TV6 En underhållningskanal för den breda publiken. Actionfilmer och den vassaste humorn.')
+    },
+    {
+        'title':    'TV8 Play',
+        'url':      'http://www.tv8play.se',
+        'thumb':    R('viasat_tv8.png'),
+        'desc':     unicode('TV8 är en svensk livsstils- och underhållningskanal med ett brett utbud. Du som gillar bilar, hus och vill veta allt om slottsliv, kommer inte vilja missa våra svenska produktioner i höst.')
+    },
+    {
+        'title':    'TV3 Play Norge',
+        'url':      'http://www.tv3play.no',
+        'thumb':    R('tv3_norway.png'),
+        'desc':     unicode('TV3 er en underholdningskanal for alle. Våre verdier er leken, nyskapende, oppløftende og engasjerende. Kanalens programtilbud består av innkjøpte serier, filmer og norske egenproduserte programmer i ulike kategorier.')
+    },
+    {
+        'title':    'Viasat 4 Play Norge',
+        'url':      'http://www.viasat4play.no',
+        'thumb':    R('viasat4_norway.png'),
+        'desc':     unicode('Viasat 4 er en norsk underholdnings- og sportskanal fra Modern Times Group (MTG). Kanalen startet sendinger 8. september 2007 i forbindelse med utbyggingen av det digitale bakkenettet.')
+    },	
+    {
+        'title':    'TV3 Play Danmark',
+        'url':      'http://www.tv3play.dk',
+        'thumb':    R('tv3_norway.png'),
+        'desc':     unicode('På TV3 Play kan du se alle TV3’s egne programmer og nogen af vores udenlandske serier. Vi har også ekstramateriale til flere af vores programmer. Mer information om vores programmer findes på TV3.dk')
+    },
 ]
-
-IMAGE_BASE_URL = 'http://play.pdl.viaplay.com/'
 
 ###################################################################################################
 def Start():
-  DirectoryObject.thumb = R(THUMB)
-  ObjectContainer.art   = R(ART)
+    DirectoryObject.thumb = R(THUMB)
+    ObjectContainer.art   = R(ART)
 
-  HTTP.CacheTime = CACHE_1HOUR  
+    HTTP.CacheTime = CACHE_1HOUR  
 
 ###################################################################################################
 @handler(PREFIX, TITLE, thumb = THUMB, art = ART)

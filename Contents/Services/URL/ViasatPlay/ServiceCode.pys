@@ -31,8 +31,8 @@ def MetadataObjectForURL(url):
                     title = unicode(video['title']),
                     summary = unicode(video['summary'] + video['description']),
                     show = unicode(video['formattitle']),
-                    art = "http://play.pdl.viaplay.com/imagecache/497x280/" + videos['format']['image'].replace('\\', ''),
-                    thumb = "http://play.pdl.viaplay.com/imagecache/497x280/" + video['image'].replace('\\', ''),
+                    art = GetImgUrl(videos['format']['image']),
+                    thumb = GetImgUrl(video['image']),
                     originally_available_at = Datetime.ParseDate(video['airdate'].split(" ")[0]).date(),
                     duration = int(video['length']) * 1000,
                     season = int(video['season']),
@@ -116,4 +116,7 @@ def GetHLSStreams(url):
 
     return sorted_streams
 
+####################################################################################################
+def GetImgUrl(url):
+    return "http://play.pdl.viaplay.com/imagecache/497x280/" + url.replace('\\', '') 
 
