@@ -64,17 +64,26 @@ def PlayVideo(id):
 
     if mediaUrl.startswith("http"):
         if mediaUrl.endswith(".m3u8"):
-            streams = GetHLSStreams(mediaUrl)
-
             return IndirectResponse(
                         VideoClipObject,
-                        key = HTTPLiveStreamURL(streams[0]['url'])
+                        key = HTTPLiveStreamURL(GetClientDependentURL(mediaUrl))
             )
     
         elif mediaUrl.endswith(".mp4"):
             return Redirect(mediaUrl)
   
     raise Ex.MediaNotAvailable
+
+####################################################################################################
+def GetClientDependentURL(url):
+    if Client.Platform in ['MacOSX', 'Windows']:
+        streams = GetHLSStreams(url)
+    
+        # Return highest bitrate url since PMC can't handle HLS correctly
+        return streams[0]['url']
+    else:
+        # Other clients can handle HLS correctly
+        return url 
 
 ####################################################################################################
 def GetHLSStreams(url):
