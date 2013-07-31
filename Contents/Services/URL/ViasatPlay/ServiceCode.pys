@@ -33,44 +33,48 @@ def MetadataObjectForURL(url):
         pass
 
 ####################################################################################################
+@deferred
 def MediaObjectsForURL(url):
     # Determine id of episode
     try:
-        id  = RE_ID.search(url).group(0)
-    except:
-        raise Ex.MediaNotAvailable
-  
-    return [
-        MediaObject(                
-            audio_channels          = 2,
-            optimized_for_streaming = True,
-            parts                   = [
-                PartObject(
-                    key = Callback(PlayVideo, id = id)
-                )
-            ]
-        )
-    ]
-
-####################################################################################################
-@indirect
-def PlayVideo(id):
-    try: 
+        id          = RE_ID.search(url).group(0)
         pageElement = HTML.ElementFromURL(VIDEO_STREAM_URL % id)
+        mediaUrl    = pageElement.xpath("text()")[0].replace('"', '').replace('\\', '')
     except:
         raise Ex.MediaNotAvailable
     
-    mediaUrl = pageElement.xpath("text()")[0].replace('"', '').replace('\\', '')
-
     if mediaUrl.startswith("http"):
         if mediaUrl.endswith(".m3u8"):
-            return IndirectResponse(
-                        VideoClipObject,
-                        key = HTTPLiveStreamURL(GetClientDependentURL(mediaUrl))
-            )
+            return [
+                MediaObject(
+                    container               = 'mpegts',
+                    video_codec             = VideoCodec.H264,
+                    audio_codec             = AudioCodec.AAC,          
+                    audio_channels          = 2,
+                    optimized_for_streaming = True,
+                    parts                   = [
+                        PartObject(
+                            key = HTTPLiveStreamURL(GetClientDependentURL(mediaUrl))
+                        )
+                    ]
+                )
+            ]
     
         elif mediaUrl.endswith(".mp4"):
-            return Redirect(mediaUrl)
+            return [
+                MediaObject(
+                    container               = Container.MP4,
+                    video_codec             = VideoCodec.H264,
+                    audio_codec             = AudioCodec.AAC,          
+                    audio_channels          = 2,
+                    optimized_for_streaming = True,
+                    parts                   = [
+                        PartObject(
+                            key = EmbedURL(mediaUrl)
+                        )
+                    ]
+                )
+            ]
   
     raise Ex.MediaNotAvailable
 

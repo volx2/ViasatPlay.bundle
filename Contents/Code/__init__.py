@@ -99,6 +99,9 @@ def AllPrograms(title, base_url):
 ####################################################################################################
 @route(PREFIX + '/Seasons')
 def Seasons(title, summary, base_url, id):
+    if summary:
+        summary = unicode(summary)
+        
     oc = ObjectContainer(title2 = unicode(title))
   
     seasonsInfo = JSON.ObjectFromURL(base_url + "/mobileapi/detailed?formatid=" + id)
@@ -114,7 +117,7 @@ def Seasons(title, summary, base_url, id):
                         art = GetImgUrl(seasonsInfo['format']['image'])
                     ), 
                 title = unicode(season['name']), 
-                summary = unicode(summary), 
+                summary = summary, 
                 thumb = GetImgUrl(season['image']),
                 art = GetImgUrl(seasonsInfo['format']['image'])
             )
@@ -147,6 +150,9 @@ def Episodes(title, base_url, videos_url, art):
             )
 
     except:
+        pass
+        
+    if len(oc) < 1:
         oc.header  = "Sorry"
         oc.message = "No programs found."
      
