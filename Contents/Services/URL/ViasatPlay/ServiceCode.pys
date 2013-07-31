@@ -70,13 +70,17 @@ def MediaObjectsForURL(url):
                     optimized_for_streaming = True,
                     parts                   = [
                         PartObject(
-                            key = EmbedURL(mediaUrl)
+                            key = Callback(PlayVideo, url = mediaUrl)
                         )
                     ]
                 )
             ]
   
     raise Ex.MediaNotAvailable
+
+####################################################################################################
+def PlayVideo(url):
+    return Redirect(url)
 
 ####################################################################################################
 def GetClientDependentURL(url):

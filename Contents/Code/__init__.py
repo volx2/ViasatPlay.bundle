@@ -59,15 +59,66 @@ def MainMenu():
             DirectoryObject(
                 key = 
                     Callback(
-                        AllPrograms, 
+                        ChannelMenu, 
                         title = channel['title'], 
-                        base_url = channel['url']
+                        base_url = channel['url'],
+                        thumb = channel['thumb']
                     ), 
                 title = channel['title'], 
                 thumb = channel['thumb'], 
                 summary = channel['desc']
             )
         )
+    
+    return oc
+
+####################################################################################################
+@route(PREFIX + '/ChannelMenu')
+def ChannelMenu(title, base_url, thumb):
+    oc = ObjectContainer(title1 = TITLE)
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    Episodes, 
+                    title = "Latest programs",
+                    base_url = base_url, 
+                    videos_url = base_url + "/mobileapi/featured",
+                    id = 'latest_programs'
+                ), 
+            title = "Latest programs", 
+            thumb = thumb
+        )
+    ) 
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    Episodes, 
+                    title = "Recommended",
+                    base_url = base_url, 
+                    videos_url = base_url + "/mobileapi/featured",
+                    id = 'recommended'
+                ), 
+            title = "Recommended", 
+            thumb = thumb
+        )
+    )  
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    AllPrograms, 
+                    title = title, 
+                    base_url = base_url
+                ), 
+            title = "All programs", 
+            thumb = thumb
+        )
+    )
     
     return oc
 
@@ -114,6 +165,7 @@ def Seasons(title, summary, base_url, id):
                         title = unicode(season['name']),
                         base_url = base_url, 
                         videos_url = season['videos_call'],
+                        id = 'video_program',
                         art = GetImgUrl(seasonsInfo['format']['image'])
                     ), 
                 title = unicode(season['name']), 
@@ -127,13 +179,21 @@ def Seasons(title, summary, base_url, id):
  
 ####################################################################################################
 @route(PREFIX + '/Episodes')
-def Episodes(title, base_url, videos_url, art):
+def Episodes(title, base_url, videos_url, id = None, art = None):
     oc = ObjectContainer(title2 = unicode(title))
     
     try:
         videosInfo = JSON.ObjectFromURL(videos_url)
-    
-        for video in videosInfo['video_program']:
+    except:
+        videosInfo = None
+        
+    if videosInfo:
+        if id:
+            videos = videosInfo[id]
+        else:
+            videos = videosInfo
+            
+        for video in videos:
             oc.add(
                 EpisodeObject(
                     url = base_url + '/play/' + video['id'],
@@ -148,9 +208,6 @@ def Episodes(title, base_url, videos_url, art):
                     index = int(video['episode'])
                 )
             )
-
-    except:
-        pass
         
     if len(oc) < 1:
         oc.header  = "Sorry"
