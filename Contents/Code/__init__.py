@@ -38,7 +38,7 @@ CHANNELS = [
     {
         'title':    'TV3 Play Danmark',
         'url':      'http://www.tv3play.dk',
-        'thumb':    R('tv3_norway.png'),
+        'thumb':    R('tv3_denmark.png'),
         'desc':     unicode('På TV3 Play kan du se alle TV3’s egne programmer og nogen af vores udenlandske serier. Vi har også ekstramateriale til flere af vores programmer. Mer information om vores programmer findes på TV3.dk')
     },
 ]
