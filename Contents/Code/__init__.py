@@ -1,301 +1,221 @@
-# -*- coding: utf-8 -*-
+TITLE  = 'Viasat Play'
+PREFIX = '/video/viasatplay'
 
-#Import
-from PMS import Plugin, Log, XML, HTTP
-from PMS.MediaXML import *
+ART   = "art-default.jpg"
+THUMB = 'icon-default.png'
 
-#Name and other blaha
-PLUGIN_PREFIX	= "/video/viasatplay"
-PLUGIN_VERSION	= "0.5.0"
-PLUGIN_TITLE	= "Viasat Play"
-LOGO_TV3	= "viasat_tv3.png"
-LOGO_TV6	= "viasat_tv6.png"
-LOGO_TV8	= "viasat_tv8.png"
-LOGO_SPORT	= "viasat_sport.png"
-LOGO_ALL	= "viasat_alla.png"
-LOGO_TV3_NORWAY	= "tv3_norway.png"
-LOGO_VIASAT4_NORWAY	= "viasat4_norway.png"
-LOGO_ALL_NORWAY	= "viasat_alle.png"
-LOGO_MAIN	= "icon-default.png"
-BACKGROUND	= "art-default.jpg"
+CHANNELS = [ 
+    {
+        'title':    'TV3 Play',
+        'url':      'http://www.tv3play.se',
+        'thumb':    R('viasat_tv3.png'),
+        'desc':     unicode('TV3 är kanalen med starka känslor och starka karaktärer. Det är en suverän mix av serier, livsstilsprogram, storfilmer, reportage och intressanta program.')
+    },
+    {
+        'title':    'TV6 Play',
+        'url':      'http://www.tv6play.se',
+        'thumb':    R('viasat_tv6.png'),
+        'desc':     unicode('TV6 En underhållningskanal för den breda publiken. Actionfilmer och den vassaste humorn.')
+    },
+    {
+        'title':    'TV8 Play',
+        'url':      'http://www.tv8play.se',
+        'thumb':    R('viasat_tv8.png'),
+        'desc':     unicode('TV8 är en svensk livsstils- och underhållningskanal med ett brett utbud. Du som gillar bilar, hus och vill veta allt om slottsliv, kommer inte vilja missa våra svenska produktioner i höst.')
+    },
+    {
+        'title':    'TV3 Play Norge',
+        'url':      'http://www.tv3play.no',
+        'thumb':    R('tv3_norway.png'),
+        'desc':     unicode('TV3 er en underholdningskanal for alle. Våre verdier er leken, nyskapende, oppløftende og engasjerende. Kanalens programtilbud består av innkjøpte serier, filmer og norske egenproduserte programmer i ulike kategorier.')
+    },
+    {
+        'title':    'Viasat 4 Play Norge',
+        'url':      'http://www.viasat4play.no',
+        'thumb':    R('viasat4_norway.png'),
+        'desc':     unicode('Viasat 4 er en norsk underholdnings- og sportskanal fra Modern Times Group (MTG). Kanalen startet sendinger 8. september 2007 i forbindelse med utbyggingen av det digitale bakkenettet.')
+    },	
+    {
+        'title':    'TV3 Play Danmark',
+        'url':      'http://www.tv3play.dk',
+        'thumb':    R('tv3_denmark.png'),
+        'desc':     unicode('På TV3 Play kan du se alle TV3’s egne programmer og nogen af vores udenlandske serier. Vi har også ekstramateriale til flere af vores programmer. Mer information om vores programmer findes på TV3.dk')
+    },
+]
 
-#URLs to xml/player
-TV3_MAIN_URL 		= "http://viastream.viasat.tv/siteMapData/se/2se/0"
-TV6_MAIN_URL 		= "http://viastream.viasat.tv/siteMapData/se/3se/0"
-TV8_MAIN_URL		= "http://viastream.viasat.tv/siteMapData/se/4se/0"
-TV3_NORWAY_MAIN_URL = "http://viastream.viasat.tv/siteMapData/no/2no/0"
-VIASAT4_NORWAY_MAIN_URL = "http://viastream.viasat.tv/siteMapData/no/23no/0"
-SPORT_BACKUP_URL	= "http://viastream.viasat.tv/siteMapData/se/1se/0"
-SPORT_MAIN_URL		= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=siteMapData&channel=1se&country=se&category="
-SPORT_BACKUP_URL	= "http://viastream.viasat.tv/siteMapData/se/1se/0"
-VIASAT_SEASONS_URL_OLD	= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=siteMapData&country=se&category="
-VIASAT_SEASONS_URL	= "http://viastream.viasat.tv/siteMapData/se/2se/"
-VIASAT_EPISODES_URL_OLD	= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=Products&category="
-VIASAT_EPISODES_URL	= "http://viastream.viasat.tv/Products/Category/"
-VIASAT_EPISODE_INFO_URL	= "http://viastream.player.mtgnewmedia.se/xml/xmltoplayer.php?type=Products&clipid="
-VIASAT_EPISODE_INFO_URL2="http://viastream.viasat.tv/Products/"
-PLEX_PLAYER_URL		= "http://www.plexapp.com/player/player.php?url=rtmp://mtgfs.fplive.net/mtg/flash/&clip=/sweden/"
-PLEX_PLAYER_URL_NORWAY = "http://www.plexapp.com/player/player.php?url=rtmp://mtgfs.fplive.net/mtg/flash/&clip=/norway/"
-PLEX_PLAYER_LIVE_URL	= "http://www.plexapp.com/player/player.php?url=rtmp://mtglivefs.fplive.net/mtglive-live/&clip=/"
-
+###################################################################################################
 def Start():
-	Plugin.AddRequestHandler(PLUGIN_PREFIX, BuildMenus, PLUGIN_TITLE, LOGO_MAIN,  BACKGROUND)
-	Plugin.AddViewGroup("Menu", viewMode="InfoList", contentType="items")
+    DirectoryObject.thumb = R(THUMB)
+    ObjectContainer.art   = R(ART)
 
-def BuildMenus(parameter, count):
+    HTTP.CacheTime = CACHE_1HOUR  
 
+###################################################################################################
+@handler(PREFIX, TITLE, thumb = THUMB, art = ART)
+def MainMenu():
+    oc = ObjectContainer(title1 = TITLE)
+    for channel in CHANNELS:
+        oc.add(
+            DirectoryObject(
+                key = 
+                    Callback(
+                        ChannelMenu, 
+                        title = channel['title'], 
+                        base_url = channel['url'],
+                        thumb = channel['thumb']
+                    ), 
+                title = channel['title'], 
+                thumb = channel['thumb'], 
+                summary = channel['desc']
+            )
+        )
+    
+    return oc
 
-	#List channels
-	if(count == 0):
-		dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE)
-		name = ["Alla svenska kanaler", "TV3", "TV6", "TV8", "Viasat Sport", "TV3 - Norway", "Viasat4 - Norway"]
-		#name = ["TV3", "TV6", "TV8", "Viasat Sport"]
-		logo = [LOGO_ALL, LOGO_TV3, LOGO_TV6, LOGO_TV8, LOGO_SPORT, LOGO_TV3_NORWAY, LOGO_VIASAT4_NORWAY]
-		#logo = [LOGO_TV3, LOGO_TV6, LOGO_TV8, LOGO_SPORT]
+####################################################################################################
+@route(PREFIX + '/ChannelMenu')
+def ChannelMenu(title, base_url, thumb):
+    oc = ObjectContainer(title1 = TITLE)
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    Episodes, 
+                    title = "Latest programs",
+                    base_url = base_url, 
+                    videos_url = base_url + "/mobileapi/featured",
+                    id = 'latest_programs'
+                ), 
+            title = "Latest programs", 
+            thumb = thumb
+        )
+    ) 
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    Episodes, 
+                    title = "Recommended",
+                    base_url = base_url, 
+                    videos_url = base_url + "/mobileapi/featured",
+                    id = 'recommended'
+                ), 
+            title = "Recommended", 
+            thumb = thumb
+        )
+    )  
+    
+    oc.add(
+        DirectoryObject(
+            key = 
+                Callback(
+                    AllPrograms, 
+                    title = title, 
+                    base_url = base_url
+                ), 
+            title = "All programs", 
+            thumb = thumb
+        )
+    )
+    
+    return oc
 
-		for i in range(0,len(name)):
-			thumb = Plugin.ExposedResourcePath(logo[i])
-			dir.AppendItem(DirectoryItem(name[i], name[i], thumb))
+####################################################################################################
+@route(PREFIX + '/AllPrograms')
+def AllPrograms(title, base_url):
+    oc = ObjectContainer(title2 = title)
+    programsInfo = JSON.ObjectFromURL(base_url + "/mobileapi/format")
+    for section in programsInfo['sections']:
+        for program in section['formats']:
+            oc.add(
+                DirectoryObject(
+                    key = 
+                        Callback(
+                            Seasons,
+                            title = unicode(program['title']),
+                            summary = unicode(program['description']),
+                            base_url = base_url,
+                            id = program['id']
+                        ),
+                    title = unicode(program['title']),
+                    summary = unicode(program['description']),
+                    thumb = GetImgUrl(program['image'])
+                )
+             )
+  
+    return oc
 
-		return dir.ToXML()
+####################################################################################################
+@route(PREFIX + '/Seasons')
+def Seasons(title, summary, base_url, id):
+    if summary:
+        summary = unicode(summary)
+        
+    oc = ObjectContainer(title2 = unicode(title))
+  
+    seasonsInfo = JSON.ObjectFromURL(base_url + "/mobileapi/detailed?formatid=" + id)
+    for season in seasonsInfo['formatcategories']:
+        oc.add(
+            DirectoryObject(
+                key = 
+                    Callback(
+                        Episodes, 
+                        title = unicode(season['name']),
+                        base_url = base_url, 
+                        videos_url = season['videos_call'],
+                        id = 'video_program',
+                        art = GetImgUrl(seasonsInfo['format']['image'])
+                    ), 
+                title = unicode(season['name']), 
+                summary = summary, 
+                thumb = GetImgUrl(season['image']),
+                art = GetImgUrl(seasonsInfo['format']['image'])
+            )
+        )     
 
-	#List series (channels for sport)
-	#Added fix for null-pointers
-	if(count == 1):
-		dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=parameter[0])
-		if(parameter[0] == "TV3"):
-			tempXML	= XML.ElementFromURL(TV3_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV3 Unavailable")
-			logo = LOGO_TV3
-		if(parameter[0] == "TV6"):
-			tempXML	= XML.ElementFromURL(TV6_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV6 Unavailable")
-			logo = LOGO_TV6
-		if(parameter[0] == "TV8"):
-			tempXML	= XML.ElementFromURL(TV8_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV8 Unavailable")
-			logo = LOGO_TV8
-		if(parameter[0] == "Viasat Sport"):
-			try:
-				tempXML = XML.ElementFromURL(SPORT_BACKUP_URL)
-			except:
-				tempXML = XML.ElementFromURL(SPORT_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: Sport Unavailable")
-			logo = LOGO_SPORT
-		
-		# Norwegian channels
-		if(parameter[0] == "TV3 - Norway"):
-			tempXML	= XML.ElementFromURL(TV3_NORWAY_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV3 - Norway Unavailable")
-			logo = LOGO_TV3_NORWAY
-		if(parameter[0] == "Viasat4 - Norway"):
-			tempXML	= XML.ElementFromURL(VIASAT4_NORWAY_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: Viasat4 - Norway Unavailable")
-			logo = LOGO_VIASAT4_NORWAY
-			
-		if(parameter[0] == "Alla svenska kanaler"):
-			try:
-				tempXML = XML.ElementFromURL(SPORT_BACKUP_URL)
-			except:
-				tempXML = XML.ElementFromURL(SPORT_MAIN_URL)
-			try:
-				series = tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: Sport Unavailable")
-				series = ""
-			tempXML	= XML.ElementFromURL(TV3_MAIN_URL)
-			try:
-				series = series +tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV3 Unavailable")
-			tempXML	= XML.ElementFromURL(TV6_MAIN_URL)
-			try:
-				series = series +tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV6 Unavailable")
-			tempXML	= XML.ElementFromURL(TV8_MAIN_URL)
-			try:
-				series = series +tempXML.xpath("siteMapNode")
-			except:
-				Log.Add("Exception: TV8 Unavailable")
-			sort=[]
-			for serie in series:
-				title = (serie.get("title"))
-				title = title + "---" + serie.get("id")
-				sort.append(title)
-			sort.sort(key=unicode)
-			logo = LOGO_ALL
-			for item in sort:
-				split = item.split("---")
-				title = split[0]
-				id = split[1]
-				thumb = Plugin.ExposedResourcePath(logo)
-				if(checkDeadLinks(id, parameter[0])):
-					dir.AppendItem(DirectoryItem(id, title, thumb))
+    return oc
+ 
+####################################################################################################
+@route(PREFIX + '/Episodes')
+def Episodes(title, base_url, videos_url, id = None, art = None):
+    oc = ObjectContainer(title2 = unicode(title))
+    
+    try:
+        videosInfo = JSON.ObjectFromURL(videos_url)
+    except:
+        videosInfo = None
+        
+    if videosInfo:
+        if id:
+            videos = videosInfo[id]
+        else:
+            videos = videosInfo
+            
+        for video in videos:
+            oc.add(
+                EpisodeObject(
+                    url = base_url + '/play/' + video['id'],
+                    title = unicode(video['title']),
+                    summary = unicode(video['description']),
+                    show = unicode(video['formattitle']),
+                    art = art,
+                    thumb = GetImgUrl(video['image']),
+                    originally_available_at = Datetime.ParseDate(video['airdate'].split(" ")[0]).date(),
+                    duration = int(video['length']) * 1000,
+                    season = int(video['season']),
+                    index = int(video['episode'])
+                )
+            )
+        
+    if len(oc) < 1:
+        oc.header  = "Sorry"
+        oc.message = "No programs found."
+     
+    return oc
 
-			return dir.ToXML()
+####################################################################################################
+def GetImgUrl(url):
+    return "http://play.pdl.viaplay.com/imagecache/497x280/" + url.replace('\\', '') 
 
-		for serie in series:
-			title = (serie.get("title"))
-			id = serie.get("id")
-			thumb = Plugin.ExposedResourcePath(logo)
-			if(checkDeadLinks(id, parameter[0])):
-				dir.AppendItem(DirectoryItem(id, title, thumb))
-
-		return dir.ToXML()
-
-	elif(count == 2):
-		if(parameter[0] == "Viasat Sport"):
-			showTitle = XML.ElementFromURL(VIASAT_SEASONS_URL_OLD + parameter[1]).get("title")
-			dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=showTitle)
-		else:
-			showTitle = XML.ElementFromURL(VIASAT_SEASONS_URL + parameter[1]).get("title")
-			dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=showTitle)
-
-		xml = XML.ElementFromURL(VIASAT_SEASONS_URL + parameter[1])
-		if not xml.xpath("siteMapNode"):
-			xml = XML.ElementFromURL(VIASAT_SEASONS_URL_OLD + parameter[1])
-
-		seasons = xml.xpath("siteMapNode")
-
-		if(parameter[0] == "TV3"):
-			logo = LOGO_TV3
-		if(parameter[0] == "TV6"):
-			logo = LOGO_TV6
-		if(parameter[0] == "TV8"):
-			logo = LOGO_TV8
-		if(parameter[0] == "Viasat Sport"):
-			logo = LOGO_SPORT
-		if(parameter[0] == "Alla svenska kanaler"):
-			logo = LOGO_ALL
-		if(parameter[0] == "TV3 - Norway"):
-			logo = LOGO_TV3_NORWAY
-		if(parameter[0] == "Viasat4 - Norway"):
-			logo = LOGO_VIASAT4_NORWAY
-		
-		for season in seasons:
-			title = season.get("title")
-			id = season.get("id")
-			articles = int(season.get("articles"))
-			if(articles >0 and id != "2407"):
-				thumb = getSeriesImage(id, parameter[0])
-				Log.Add("sport id: %s" % (logo))
-				if (len(thumb) == 0):
-					thumb=Plugin.ExposedResourcePath(logo)
-				dir.AppendItem(DirectoryItem(id, title, thumb))
-
-		return dir.ToXML()
-
-	#List all the episodes in the season/event
-	elif(count == 3):
-		if(parameter[0] == "Viasat Sport"):
-			showTitle = XML.ElementFromURL(VIASAT_SEASONS_URL_OLD + parameter[1]).get("title")
-			dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=showTitle)
-		else:
-			showTitle = XML.ElementFromURL(VIASAT_SEASONS_URL + parameter[1]).get("title")
-			dir = MediaContainer(art=BACKGROUND, viewGroup="Menu", title1=PLUGIN_TITLE, title2=showTitle)
-
-		xml1 = XML.ElementFromURL(VIASAT_EPISODES_URL + parameter[2])
-		if not xml1.xpath("Product"):
-			xml1= XML.ElementFromURL(VIASAT_EPISODES_URL_OLD + parameter[2])
-		episodes = xml1.xpath("Product")
-
-		for episode in episodes:
-			player_url = PLEX_PLAYER_URL
-			
-			if(parameter[0] == "TV3"):
-				logo = LOGO_TV3
-			if(parameter[0] == "TV6"):
-				logo = LOGO_TV6
-			if(parameter[0] == "TV8"):
-				logo = LOGO_TV8
-			if(parameter[0] == "Viasat Sport"):
-				logo = LOGO_SPORT
-			if(parameter[0] == "Alla svenska kanaler"):
-				logo = LOGO_ALL
-			if(parameter[0] == "TV3 - Norway"):
-				logo = LOGO_TV3_NORWAY
-				player_url = PLEX_PLAYER_URL_NORWAY
-			if(parameter[0] == "Viasat4 - Norway"):
-				logo = LOGO_VIASAT4_NORWAY
-				player_url = PLEX_PLAYER_URL_NORWAY
-			
-			title = episode.xpath("./Title/text()")[0]
-			id = episode.xpath("./ProductId/text()")[0]
-			xml= XML.ElementFromURL(VIASAT_EPISODE_INFO_URL + id)
-			if not xml.xpath("Product/Images/ImageMedia/Url/text()"):
-				xml =  XML.ElementFromURL(VIASAT_EPISODE_INFO_URL2 + id)
-			episodeInfo =xml.xpath("Product/LongDescription/text()")[0]
-			thumb =xml.xpath("Product/Images/ImageMedia/Url/text()")[0]
-			if(".jpg" not in thumb):
-				thumb=Plugin.ExposedResourcePath(logo)
-			clipLink = xml.xpath("Product/Videos/Video/Url/text()")[0]
-			
-			# Find alternate clip source
-			if clipLink.startswith('http://viastream.viasat.tv/extra/extra.php'):
-				xmlClip = XML.ElementFromURL(clipLink)
-				clipLink = xmlClip.xpath("Url/text()")[0]
-			
-			splitLink = clipLink.split('/')
-			if(len(splitLink)>10):
-				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "/" + splitLink[10] + "&live=true"
-			elif(len(splitLink)>9):
-				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "/" + splitLink[9] + "&live=true"
-			elif(len(splitLink)>8):
-				link = player_url + splitLink[6] + "/" + splitLink[7] + "/" + splitLink[8] + "&live=true"
-			elif(len(splitLink)>5):
-				link = PLEX_PLAYER_LIVE_URL + splitLink[4] + "/" + splitLink[5] + "&live=true"
-			Log.Add("Link: %s" % (link))
-			dir.AppendItem(WebVideoItem(link, title, episodeInfo, None, thumb))
-
-		return dir.ToXML()
-
-# Go deaper in the tree and check if any links is live
-def checkDeadLinks(id, parameter):
-	xml = XML.ElementFromURL(VIASAT_SEASONS_URL + id)
-	if not xml.xpath("siteMapNode"):
-		xml = XML.ElementFromURL(VIASAT_SEASONS_URL_OLD + id)
-
-	seasons = xml.xpath("siteMapNode")
-	if(len(seasons)>0):
-		for season in seasons:
-			articles = int(season.get("articles"))
-			Log.Add("Articles: %s" % (articles))
-			if(articles > 0):
-				return True
-
-	return False
-
-# Fetch image for series on step higher in the tree
-def getSeriesImage(id,parameter):
-	xml1 = XML.ElementFromURL(VIASAT_EPISODES_URL + id)
-	if not xml1.xpath("Product"):
-		xml1 = XML.ElementFromURL(VIASAT_EPISODES_URL_OLD + id)
-	episodes = xml1.xpath("Product")
-	if(len(episodes)>0):
-		firstId = episodes[0].xpath("./ProductId/text()")[0]
-		xml= XML.ElementFromURL(VIASAT_EPISODE_INFO_URL + firstId)
-		if not xml.xpath("Product/Images/ImageMedia/Url/text()"):
-			xml =  XML.ElementFromURL(VIASAT_EPISODE_INFO_URL2 + firstId)
-		thumb = xml.xpath("Product/Images/ImageMedia/Url/text()")[0]
-		if(".jpg" in thumb):
-			return thumb
-	return ""

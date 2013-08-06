@@ -1,0 +1,130 @@
+VIDEO_STREAM_URL  = 'http://viastream.viasat.tv/MobileStream/%s'
+VIDEO_DETAILS_URL = '/mobileapi/detailed?videoid=%s'
+
+RE_ID = Regex('(?<=play/)[0-9]+')
+
+####################################################################################################
+def MetadataObjectForURL(url): 
+    # Determine id of episode
+    try:
+        id  = RE_ID.search(url).group(0)
+    except:
+        raise Ex.MediaNotAvailable
+
+    baseurl = url[ : url.rfind('/') + 1].replace("/play/", "")
+
+    try: 
+        videos = JSON.ObjectFromURL(baseurl + VIDEO_DETAILS_URL % id)
+
+        for video in videos['videos']['video_program']:
+            if id == video['id']:
+                return EpisodeObject(
+                    title = unicode(video['title']),
+                    summary = unicode(video['summary'] + video['description']),
+                    show = unicode(video['formattitle']),
+                    art = GetImgUrl(videos['format']['image']),
+                    thumb = GetImgUrl(video['image']),
+                    originally_available_at = Datetime.ParseDate(video['airdate'].split(" ")[0]).date(),
+                    duration = int(video['length']) * 1000,
+                    season = int(video['season']),
+                    index = int(video['episode'])
+                )
+    except:
+        pass
+
+####################################################################################################
+@deferred
+def MediaObjectsForURL(url):
+    # Determine id of episode
+    try:
+        id          = RE_ID.search(url).group(0)
+        pageElement = HTML.ElementFromURL(VIDEO_STREAM_URL % id)
+        mediaUrl    = pageElement.xpath("text()")[0].replace('"', '').replace('\\', '')
+    except:
+        raise Ex.MediaNotAvailable
+    
+    if mediaUrl.startswith("http"):
+        if mediaUrl.endswith(".m3u8"):
+            return [
+                MediaObject(
+                    container               = 'mpegts',
+                    video_codec             = VideoCodec.H264,
+                    audio_codec             = AudioCodec.AAC,          
+                    audio_channels          = 2,
+                    optimized_for_streaming = True,
+                    parts                   = [
+                        PartObject(
+                            key = HTTPLiveStreamURL(GetClientDependentURL(mediaUrl))
+                        )
+                    ]
+                )
+            ]
+    
+        elif mediaUrl.endswith(".mp4"):
+            return [
+                MediaObject(
+                    container               = Container.MP4,
+                    video_codec             = VideoCodec.H264,
+                    audio_codec             = AudioCodec.AAC,          
+                    audio_channels          = 2,
+                    optimized_for_streaming = True,
+                    parts                   = [
+                        PartObject(
+                            key = Callback(PlayVideo, url = mediaUrl)
+                        )
+                    ]
+                )
+            ]
+  
+    raise Ex.MediaNotAvailable
+
+####################################################################################################
+def PlayVideo(url):
+    return Redirect(url)
+
+####################################################################################################
+def GetClientDependentURL(url):
+    if Client.Platform in ['MacOSX', 'Windows']:
+        streams = GetHLSStreams(url)
+    
+        # Return highest bitrate url since PMC can't handle HLS correctly
+        return streams[0]['url']
+    else:
+        # Other clients can handle HLS correctly
+        return url 
+
+####################################################################################################
+def GetHLSStreams(url):
+    streams = []
+
+    playList = HTTP.Request(url).content
+
+    # Parse the m3u8 file to get:
+    # - URL
+    # - Resolution
+    # - Bitrate
+    for line in playList.splitlines():
+        if "BANDWIDTH" in line:
+            stream            = {}
+            stream["bitrate"] = int(Regex('(?<=BANDWIDTH=)[0-9]+').search(line).group(0))        
+
+            if "RESOLUTION" in line:
+                stream["resolution"] = int(Regex('(?<=RESOLUTION=)[0-9]+x[0-9]+').search(line).group(0).split("x")[1])
+            else:
+                stream["resolution"] = 0
+
+        elif ".m3u8" in line:
+            if not line.startswith("http://"):
+                path          = url[ : url.rfind('/') + 1]
+                stream["url"] = path + line
+                    
+            streams.append(stream)
+                
+    sorted_streams = sorted(streams, key = lambda stream: stream["bitrate"], reverse = True)        
+
+    return sorted_streams
+
+####################################################################################################
+def GetImgUrl(url):
+    return "http://play.pdl.viaplay.com/imagecache/497x280/" + url.replace('\\', '') 
+
