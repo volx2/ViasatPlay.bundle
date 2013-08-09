@@ -1,3 +1,5 @@
+import datetime
+
 VIDEO_STREAM_URL  = 'http://viastream.viasat.tv/MobileStream/%s'
 VIDEO_DETAILS_URL = '/mobileapi/detailed?videoid=%s'
 
@@ -29,6 +31,16 @@ def MetadataObjectForURL(url):
                     season = int(video['season']),
                     index = int(video['episode'])
                 )
+        for clip in videos['videos']['video_clip']:
+            if id == clip['id']:
+                return VideoClipObject(
+                    title = unicode(clip['title']),
+                    summary = unicode(clip['summary']),
+                    thumb = GetImgUrl(clip['image']),
+                    art = GetImgUrl(videos['format']['image']),
+                    originally_available_at = datetime.date.fromtimestamp(int(clip['created'])),
+                    duration = int(clip['length']) * 1000
+                    )
     except:
         pass
 
