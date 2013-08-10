@@ -258,8 +258,7 @@ def Seasons(title, summary, base_url, id):
     
     else:
         for season in seasonsInfo['formatcategories']:
-            seasonName   = unicode(season['name'])
-            videos_url   = season['videos_call']
+            seasonName = unicode(season['name']) 
 
             oc.add(
                 DirectoryObject(
@@ -268,7 +267,7 @@ def Seasons(title, summary, base_url, id):
                             Episodes, 
                             title      = seasonName,
                             base_url   = base_url, 
-                            videos_url = videos_url,
+                            videos_url = season['videos_call'],
                             id         = 'video_program',
                             art        = seasonImgUrl
                         ), 
@@ -284,8 +283,7 @@ def Seasons(title, summary, base_url, id):
 ####################################################################################################
 @route(PREFIX + '/Episodes')
 def Episodes(title, base_url, videos_url, id = None, art = None):
-    oc        = ObjectContainer(title2 = unicode(title))
-    episodeOc = ObjectContainer(title2 = unicode(title))
+    oc = ObjectContainer(title2 = unicode(title))
 
     try:
         videosInfo = JSON.ObjectFromURL(videos_url)
@@ -317,20 +315,25 @@ def Episodes(title, base_url, videos_url, id = None, art = None):
     
     if videos:
         for video in videos:
-            oc.add(
-                EpisodeObject(
-                    url = base_url + '/play/' + video['id'],
-                    title = unicode(video['title'] + " - " + video['summary']),
-                    summary = unicode(video['description']),
-                    show = unicode(video['formattitle']),
-                    art = art,
-                    thumb = GetImageURL(video['image']),
-                    originally_available_at = Datetime.ParseDate(video['airdate'].split(" ")[0]).date(),
-                    duration = int(video['length']) * 1000,
-                    season = int(video['season']),
-                    index = int(video['episode'])
+            try:
+                oc.add(
+                    EpisodeObject(
+                        url = base_url + '/play/' + video['id'],
+                        title = unicode(video['title'] + " - " + video['summary']),
+                        summary = unicode(video['description']),
+                        show = unicode(video['formattitle']),
+                        art = art,
+                        thumb = GetImageURL(video['image']),
+                        originally_available_at = Datetime.ParseDate(video['airdate'].split(" ")[0]).date(),
+                        duration = int(video['length']) * 1000,
+                        season = int(video['season']),
+                        index = int(video['episode'])
+                    )
                 )
-            )
+            except:
+                # If not all attributes, especially duration, are present
+                # for an episode, it won't play either, so we skip those.
+                continue
             
     if len(oc) < 1:
         return NoProgramsFound(oc)
