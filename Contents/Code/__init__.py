@@ -26,6 +26,12 @@ CHANNELS = [
         'desc':     unicode('TV8 är en svensk livsstils- och underhållningskanal med ett brett utbud. Du som gillar bilar, hus och vill veta allt om slottsliv, kommer inte vilja missa våra svenska produktioner i höst.')
     },
     {
+        'title':    'TV10 Play',
+        'base_url': 'http://www.tv10play.se',
+        'thumb':    R('viasat_tv10.png'),
+        'desc':     unicode('På TV10 Play ser du alla TV10:s egna program och vissa av våra livesändningar och utländska serier. Vi har dessutom extramaterial till många av våra program. Mer information om våra program finns på TV10.se.')
+    },
+    {
         'title':    'TV3 Play Norge',
         'base_url': 'http://www.tv3play.no',
         'thumb':    R('tv3_norway.png'),
@@ -98,21 +104,6 @@ def ChannelMenu(title, base_url, thumb):
                     id = 'latest_programs'
                 ), 
             title = "Latest programs", 
-            thumb = thumb
-        )
-    ) 
-
-    oc.add(
-        DirectoryObject(
-            key = 
-                Callback(
-                    Clips, 
-                    base_url = base_url, 
-                    videos_url = base_url + "/mobileapi/featured",
-                    title = "Latest clips",
-                    id    = 'latest_clips'
-                ), 
-            title = "Latest clips", 
             thumb = thumb
         )
     ) 
@@ -294,24 +285,6 @@ def Episodes(title, base_url, videos_url, id = None, art = None):
         videos = videosInfo[id]
     else:
         videos = videosInfo
-
-    if id == 'video_program' and videosInfo['video_clip'] != None:
-        oc.add(
-            DirectoryObject(
-                key = 
-                    Callback(
-                        Clips,
-                        base_url   = base_url,
-                        videos_url = videos_url,
-                        title      = title,
-                        id         = 'video_clip',
-                        art        = art
-                    ), 
-                title = "Clips",
-                thumb = art,  
-                art   = art
-            )
-        )
     
     if videos:
         for video in videos:
@@ -338,34 +311,6 @@ def Episodes(title, base_url, videos_url, id = None, art = None):
     if len(oc) < 1:
         return NoProgramsFound(oc)
 
-    return oc
-
-####################################################################################################
-@route(PREFIX + '/Clips')
-def Clips(base_url, videos_url, title, id, art = None):
-
-    oc = ObjectContainer(title2 = unicode(title))
-
-    videosInfo = JSON.ObjectFromURL(videos_url)
-
-    if id:
-        videos = videosInfo[id]
-    else:
-        videos = videosInfo
-    
-    for clip in videos: 
-        oc.add(
-            VideoClipObject(
-                url = base_url + '/play/' + clip['id'],
-                title = unicode(clip['title']),
-                summary = unicode(clip['summary']),
-                thumb = GetImageURL(clip['image']),
-                art = art,
-                originally_available_at = Datetime.FromTimestamp(int(clip['created'])),
-                duration = int(clip['length']) * 1000
-            )
-        )
-        
     return oc
 
 ####################################################################################################
