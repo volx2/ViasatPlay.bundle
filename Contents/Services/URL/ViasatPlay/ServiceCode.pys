@@ -29,6 +29,17 @@ def MetadataObjectForURL(url):
                     season = int(video['season']),
                     index = int(video['episode'])
                 )
+                
+        for clip in videos['videos']['video_clip']:
+            if id == clip['id']:
+                return VideoClipObject(
+                    title = unicode(clip['title']),
+                    summary = unicode(clip['summary']),
+                    thumb = GetImgUrl(clip['image']),
+                    art = GetImgUrl(videos['format']['image']),
+                    originally_available_at = Datetime.FromTimestamp(int(clip['created'])),
+                    duration = int(clip['length']) * 1000
+                )
     except:
         pass
 
@@ -114,9 +125,11 @@ def GetHLSStreams(url):
                 stream["resolution"] = 0
 
         elif ".m3u8" in line:
+            path = ''
             if not line.startswith("http://"):
                 path          = url[ : url.rfind('/') + 1]
-                stream["url"] = path + line
+                
+            stream["url"] = path + line
                     
             streams.append(stream)
                 
