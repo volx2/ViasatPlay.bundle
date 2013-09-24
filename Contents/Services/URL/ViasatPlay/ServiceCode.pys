@@ -44,8 +44,21 @@ def MetadataObjectForURL(url):
         pass
 
 ####################################################################################################
-@deferred
 def MediaObjectsForURL(url):
+    return [
+        MediaObject(         
+            audio_channels          = 2,
+            optimized_for_streaming = True,
+            parts                   = [
+                PartObject(
+                    key = HTTPLiveStreamURL(Callback(PlayVideo, url = url))
+                )
+            ]
+        )
+    ]
+
+####################################################################################################
+def PlayVideo(url):
     # Determine id of episode
     try:
         id          = RE_ID.search(url).group(0)
@@ -56,53 +69,24 @@ def MediaObjectsForURL(url):
     
     if mediaUrl.startswith("http"):
         if mediaUrl.endswith(".m3u8"):
-            return [
-                MediaObject(
-                    container               = 'mpegts',
-                    video_codec             = VideoCodec.H264,
-                    audio_codec             = AudioCodec.AAC,          
-                    audio_channels          = 2,
-                    optimized_for_streaming = True,
-                    parts                   = [
-                        PartObject(
-                            key = HTTPLiveStreamURL(GetClientDependentURL(mediaUrl))
-                        )
-                    ]
-                )
-            ]
+            streams = GetHLSStreams(mediaUrl)
+                
+            newPlayList = ""  
+            orgPlayList = HTTP.Request(streams[0]['url']).content
+            path        = mediaUrl[ : mediaUrl.rfind('/') + 1]
+
+            for line in orgPlayList.splitlines():
+                if line.startswith("#"):
+                    newPlayList = newPlayList + line + '\n' 
+                else:
+                    newPlayList = newPlayList + path + line + '\n'
+                    
+            return newPlayList         
     
         elif mediaUrl.endswith(".mp4"):
-            return [
-                MediaObject(
-                    container               = Container.MP4,
-                    video_codec             = VideoCodec.H264,
-                    audio_codec             = AudioCodec.AAC,          
-                    audio_channels          = 2,
-                    optimized_for_streaming = True,
-                    parts                   = [
-                        PartObject(
-                            key = Callback(PlayVideo, url = mediaUrl)
-                        )
-                    ]
-                )
-            ]
+            return Redirect(mediaUrl)
   
     raise Ex.MediaNotAvailable
-
-####################################################################################################
-def PlayVideo(url):
-    return Redirect(url)
-
-####################################################################################################
-def GetClientDependentURL(url):
-    if Client.Platform in ['MacOSX', 'Windows']:
-        streams = GetHLSStreams(url)
-    
-        # Return highest bitrate url since PMC can't handle HLS correctly
-        return streams[0]['url']
-    else:
-        # Other clients can handle HLS correctly
-        return url 
 
 ####################################################################################################
 def GetHLSStreams(url):
